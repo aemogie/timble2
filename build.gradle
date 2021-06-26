@@ -1,0 +1,66 @@
+plugins {
+	id 'java'
+}
+
+group 'io.github.aemogie'
+libsDirName = '..'
+version '1.0'
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	lwjglVersion = '3.2.3'
+	imguiVersion = '1.81.2'
+	jomlVersion = '1.10.1'
+	lwjglNatives = 'natives-windows'
+	gsonVersion = '2.8.7'
+}
+
+dependencies {
+	//region LWJGL
+	implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+	implementation "org.lwjgl:lwjgl"
+	implementation "org.lwjgl:lwjgl-glfw"
+	implementation "org.lwjgl:lwjgl-nfd"
+	implementation "org.lwjgl:lwjgl-openal"
+	implementation "org.lwjgl:lwjgl-opengl"
+	implementation "org.lwjgl:lwjgl-stb"
+	runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
+	runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
+	runtimeOnly "org.lwjgl:lwjgl-nfd::$lwjglNatives"
+	runtimeOnly "org.lwjgl:lwjgl-openal::$lwjglNatives"
+	runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
+	runtimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
+	//endregion
+
+	//joml
+	implementation "org.joml:joml:$jomlVersion"
+	//endregion
+	
+	implementation "com.google.code.gson:gson:$gsonVersion"
+}
+
+jar {
+	setDuplicatesStrategy(DuplicatesStrategy.INCLUDE)
+	//noinspection GroovyAssignabilityCheck
+	manifest {
+		attributes(
+				'Main-Class': 'io.github.aemogie.timble.Timble'
+		)
+	}
+}
+
+task fatJar(type: Jar) {
+	duplicatesStrategy = DuplicatesStrategy.INCLUDE
+	manifest.from jar.manifest
+	archiveClassifier.set 'all'
+	processResources.exclude("*")
+	from {
+		configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+	}
+	with jar
+}
+
+compileJava.finalizedBy(fatJar)
